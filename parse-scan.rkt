@@ -9,7 +9,7 @@
     [value-string ("\"" (arbno (not #\")) "\"") string]
     ;[key-string ("\"" letter (arbno (or letter digit "_")) "\"") symbol]
     [number (digit (arbno digit)) number]
-    [operator ((or "*" "-" "+")) symbol]
+    [operator ((or "*" "+")) symbol]
     
     )
   )
@@ -24,6 +24,7 @@
     [value (object) a-object-value]
     [slist ("[" value-string (arbno operator value-string) "]") a-list]))
     
+
 
 
 

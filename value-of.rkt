@@ -11,11 +11,6 @@
 (define scan&parse
   (sllgen:make-string-parser my-lexical-spec my-grammar))
 
-(define (is-in-list list value)
- (cond
-  [(empty? list) false]
-  [(equal? (first list) value) true]
-  [else (is-in-list (rest list) value)]))
 
 (define keywords (list "size" "docs" "assignment" "query"))
 
@@ -54,11 +49,11 @@
     [a-object-value (obj) (extract-pair-list-from-obj obj) ]
     [else (list)]))
 
-(define (extract-key-value-pair-from-pair-list pair-list)
+(define (extract-key-value-pair-from-pair-list pair-list func-env)
   (if (null? pair-list)
       (list)
       (cases pair (car pair-list)
-        [a-pair (k v) (cons (var-item (read-str k) (value->string v)) (extract-key-value-pair-from-pair-list (cdr pair-list)))])))
+        [a-pair (k v) (cons (var-item (read-str k) (value->string v) func-env) (extract-key-value-pair-from-pair-list (cdr pair-list) func-env))])))
 
 (define (extract-assignment pair-list)
   (extract-key-from-pair-list pair-list "assignment" (a-object-value (an-object (list)))))
@@ -70,10 +65,10 @@
 
 
 
-(define (extract-assignment-env-from-pair-list pair-list)
+(define (extract-assignment-env-from-pair-list pair-list func-env)
   (let ([aov (extract-assignment pair-list)])
     (let ([inner-pair-list (extract-pair-list-from-a-object-value (extract-assignment pair-list))])
-      (extract-key-value-pair-from-pair-list inner-pair-list))))
+      (extract-key-value-pair-from-pair-list inner-pair-list func-env))))
 
 
 (define (body->fun-body body)
@@ -82,7 +77,13 @@
                   (cases slist l
                     [a-list (first-operand operators rest-operands) (fun-body (read-str first-operand) operators (map read-str rest-operands))])]
     [else (fun-body "sag" (list) (list))]))
-                  
+
+
+(define (is-func-call? val)
+  (string-contains? val "("))
+
+
+  
                    
     
 (define (extract-func-env-from-pair-list pair-list current-env)
@@ -108,10 +109,13 @@
   (let ([pair-list (extract-pair-list-from-obj obj)])
     (let ([query (extract-query pair-list)]
           [size (extract-size pair-list)]
-          [assignment-env (extract-assignment-env-from-pair-list pair-list)]
           [func-env (extract-func-env-from-pair-list pair-list prog-env)]
           )
-      (let ([new-env (ext-env (append assignment-env func-env) prog-env)])
+      (let ([new-func-env (ext-env func-env prog-env)])
+      (let (
+            [assignment-env (extract-assignment-env-from-pair-list pair-list new-func-env)]
+            )
+        (let ([new-env (ext-env (append assignment-env func-env) prog-env)])
       (begin (display query)
              (display "\n")
              (display size)
@@ -120,12 +124,25 @@
              (display "\n")
              (display func-env)
              (display "\n"))
-        new-env
-      ))))
+        (resolve-value query new-env)
+      ))))))
              
              
                
-    
+(define (resolve-value val envi)
+  (if (is-func-call? val)
+      (let ([func-name (func-call-str->func-name val)])
+      (let ([result (apply-env func-name envi)])
+        result))
+      (let ([result (apply-env val envi)])
+        (if (equal? result "not-found")
+            val
+            (let ([found-val (var-item->value result)]
+                  [found-env (var-item->env result)]
+                  )
+              (resolve-value found-val found-env))
+            ))))
+      
 
 
 (define (main program-file)
