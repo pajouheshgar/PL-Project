@@ -19,7 +19,8 @@
 
 (define-datatype env env?
   [empty-env]
-  [ext-env (list-of env-item?)])
+  [ext-env [new-env (list-of env-item?)]
+           [save-env env?]])
 
 
 (provide (all-defined-out))

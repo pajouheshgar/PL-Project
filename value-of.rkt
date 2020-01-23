@@ -63,6 +63,11 @@
 (define (extract-assignment pair-list)
   (extract-key-from-pair-list pair-list "assignment" (a-object-value (an-object (list)))))
 
+(define (extract-query pair-list)
+  (value->string (extract-key-from-pair-list pair-list "query" "sag")))
+
+
+
 
 
 (define (extract-assignment-env-from-pair-list pair-list)
@@ -101,8 +106,25 @@
 
 (define (value-of-object obj prog-env)
   (let ([pair-list (extract-pair-list-from-obj obj)])
-               (begin (extract-assignment-env-from-pair-list pair-list)
-                      (extract-func-env-from-pair-list pair-list prog-env))))
+    (let ([query (extract-query pair-list)]
+          [size (extract-size pair-list)]
+          [assignment-env (extract-assignment-env-from-pair-list pair-list)]
+          [func-env (extract-func-env-from-pair-list pair-list prog-env)]
+          )
+      (let ([new-env (ext-env (append assignment-env func-env) prog-env)])
+      (begin (display query)
+             (display "\n")
+             (display size)
+             (display "\n")
+             (display assignment-env)
+             (display "\n")
+             (display func-env)
+             (display "\n"))
+        new-env
+      ))))
+             
+             
+               
     
 
 
