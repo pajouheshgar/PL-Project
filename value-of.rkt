@@ -11,6 +11,19 @@
 (define scan&parse
   (sllgen:make-string-parser my-lexical-spec my-grammar))
 
+(define (is-in-list list value)
+ (cond
+  [(empty? list) false]
+  [(equal? (first list) value) true]
+  [else (is-in-list (rest list) value)]))
+
+(define keywords (list "size" "docs" "assignment" "query"))
+
+(define (is-keyword? k)
+  (is-in-list keywords k)
+  )
+  
+
 (define (value->num val)
   (cases value val
     [a-number-value (num) num]
@@ -25,13 +38,16 @@
   (cases object obj
     [an-object (pair-list) pair-list]))
 
-(define (extract-size pair-list)
+(define (extract-key-from-pair-list pair-list key default)
   (if (null? pair-list)
-      1000
+      default
       (cases pair (car pair-list)
-        [a-pair (k v) (if (equal? (read-str k) "size")
-                          (value->num v)
-                          (extract-size (cdr pair-list)))])))
+        [a-pair (k v) (if (equal? (read-str k) key)
+                          v
+                          (extract-key-from-pair-list (cdr pair-list) key default))])))
+
+(define (extract-size pair-list)
+  (value->num (extract-key-from-pair-list pair-list "size" (a-number-value 1000))))
 
 (define (extract-pair-list-from-a-object-value aov)
   (cases value aov
@@ -45,20 +61,36 @@
         [a-pair (k v) (cons (var-item (read-str k) (value->string v)) (extract-key-value-pair-from-pair-list (cdr pair-list)))])))
 
 (define (extract-assignment pair-list)
-  (if (null? pair-list)
-      (a-object-value (an-object (list)))
-      (cases pair (car pair-list)
-        [a-pair (k v) (if (equal? (read-str k) "assignment")
-                          v
-                          (extract-assignment (cdr pair-list)))])))
+  (extract-key-from-pair-list pair-list "assignment" (a-object-value (an-object (list)))))
+
 
 
 (define (extract-assignment-env-from-pair-list pair-list)
   (let ([aov (extract-assignment pair-list)])
     (let ([inner-pair-list (extract-pair-list-from-a-object-value (extract-assignment pair-list))])
       (extract-key-value-pair-from-pair-list inner-pair-list))))
-      
 
+
+(define (body->fun-body body)
+  (cases value body
+    [a-list-value (l)
+                  (cases slist l
+                    [a-list (first-operand operators rest-operands) (fun-body (read-str first-operand) operators (map read-str rest-operands))])]
+    [else (fun-body "sag" (list) (list))]))
+                  
+                   
+    
+(define (extract-func-env-from-pair-list pair-list current-env)
+  (if (null? pair-list)
+      (list)
+      (cases pair (car pair-list)
+        [a-pair (k v)
+                (if (is-keyword? (read-str k))
+                    (extract-func-env-from-pair-list (cdr pair-list) current-env)
+                    (let ([pair-list-inner (extract-pair-list-from-a-object-value v)])
+                      (let ([fun-body (body->fun-body (extract-key-from-pair-list pair-list-inner "body" 0))]
+                            [args (string-split (value->string (extract-key-from-pair-list pair-list-inner "input" 0)) ",")])
+                        (cons (fun-item (read-str k) fun-body args current-env) (extract-func-env-from-pair-list (cdr pair-list) current-env)))))])))
 
 (define (value-of-program prog)
   (cases program prog
@@ -68,9 +100,9 @@
 
 
 (define (value-of-object obj prog-env)
-  (cases object obj
-    [an-object (pair-list)
-               (begin (extract-assignment-env-from-pair-list pair-list))]))
+  (let ([pair-list (extract-pair-list-from-obj obj)])
+               (begin (extract-assignment-env-from-pair-list pair-list)
+                      (extract-func-env-from-pair-list pair-list prog-env))))
     
 
 
