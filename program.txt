@@ -1,0 +1,7 @@
+{ 
+	"size" : 10 , 
+	"and_inputs" : { "body" : ["or_inputs(x, newyork)" * "y" - "z"] , "input" : "z" } , 
+	"assignment" : { "x" : "newyork" , "y" : "and_inputs()" } , 
+	"query" : "newyork" , 
+	"docs" : { "docs" : "/home/ubuntu/docs/" , "query" : "baboon" }
+ }
