@@ -75,14 +75,38 @@
                 [else (extract-args args-str c k1 (+ 1 k2))]))))
   
              
+(define translate
+  '#hash((#\; . #\ )
+         (#\" . #\ )
+         (#\. . #\ )
+         (#\( . #\ )
+         (#\) . #\ )
+         (#\! . #\ )
+         (#\? . #\ )
+         (#\, . #\ )
+         (#\: . #\ )
+         (#\\ . #\ )
+         (#\[ . #\ )
+         (#\] . #\ )
+         )
+  )     
           
-          
-  
+(define (remove-punc str)
+  (string-append " " (string-join (filter non-empty-string? (string-split (apply string
+         (map (lambda (c) (hash-ref translate c (const c)))
+              (string->list str))) #px"\\s|\n")) " ") " ")
+  )
+
+(define (dir->docs dir)
+  (for/list ([file (in-directory (read-str dir))])
+      file))
+
+;(dir->docs "./files/")
 
 (provide (all-defined-out))
 
 
-(func-call-str->func-args "and-inputs(or_inputs(x, z),y)")
+;(func-call-str->func-args "and-inputs(or_inputs(x, z),y)")
 
 ;(extract-args  (string-normalize-spaces "or_inputs(x, z(h(t, j))) ,y, w,t" #px"\\s+" "") 0 0 0)
 

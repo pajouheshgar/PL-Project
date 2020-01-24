@@ -17,6 +17,14 @@
             [fun-body func-body?]
             [fun-args (list-of string?)]
             [fun-env env?]])
+
+(define-datatype thunk thunk?
+  [args-thunk [arg-list (list-of string?)]
+        [arg-env env?]])
+
+(define-datatype func-lazy func-lazy?
+  [flazy [fi env-item?]
+         [fthunk thunk?]])
             
 (define (env-item->key ei)
   (cases env-item ei
@@ -52,6 +60,8 @@
              (if (is-in-list (map env-item->key item-list) k)
                  (find-key-in-item-list item-list k)
                  (apply-env k save-env))]))
+
+
              
   
 

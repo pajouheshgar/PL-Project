@@ -1,8 +1,8 @@
 { 
 	"size" : 10 , 
-	"and_inputs" : { "body" : ["or_inputs(x, newyork)" * "y" + "z"] , "input" : "z,x" } , 
-	"assignment" : { "x" : "dock" , "y" : "origami(hi,bye,gay)" } , 
+	"and_inputs" : { "body" : ["g" * "y" + "z"] , "input" : "z,x" } , 
+	"assignment" : { "x" : "dock" , "y" : "origami(and_inputs(b, d),bye,gay)" } , 
 	"query" : "y" , 
 	"origami" : { "body" : ["t" + "w" + "q" * "o"] , "input" : "o,w,t" } , 
-	"docs" : { "docs" : "/home/ubuntu/docs/" , "query" : "baboon" }
+	"docs" : { "docs" : "./files/" , "query" : "baboon" }
  }

@@ -17,7 +17,12 @@
 (define (is-keyword? k)
   (is-in-list keywords k)
   )
-  
+
+
+(define (a-obj-value->obj aov)
+  (cases value aov
+    [a-object-value (obj) obj]
+    [else "error13"]))
 
 (define (value->num val)
   (cases value val
@@ -27,7 +32,7 @@
 (define (value->string val)
   (cases value val
     [a-string-value (str) (read-str str)]
-    [else "sag"]))
+    [else "error16"]))
 
 (define (extract-pair-list-from-obj obj)
   (cases object obj
@@ -43,6 +48,9 @@
 
 (define (extract-size pair-list)
   (value->num (extract-key-from-pair-list pair-list "size" (a-number-value 1000))))
+
+(define (extract-docs pair-list)
+  (extract-key-from-pair-list pair-list "docs" "/files/"))
 
 (define (extract-pair-list-from-a-object-value aov)
   (cases value aov
@@ -110,37 +118,53 @@
     (let ([query (extract-query pair-list)]
           [size (extract-size pair-list)]
           [func-env (extract-func-env-from-pair-list pair-list prog-env)]
+          [docs (extract-docs pair-list)]
           )
       (let ([new-func-env (ext-env func-env prog-env)])
       (let (
             [assignment-env (extract-assignment-env-from-pair-list pair-list new-func-env)]
             )
         (let ([new-env (ext-env (append assignment-env func-env) prog-env)])
-      (begin (display query)
+      (begin (display docs)
              (display "\n")
              (display size)
              (display "\n")
              (display assignment-env)
              (display "\n")
              (display func-env)
-             (display "\n"))
-        (resolve-value query new-env)
+             (display "\n")
+             (cases value docs
+               [a-object-value (obj)
+                               (let ([found-docs (value-of-object obj new-env)])
+                                 (search-value query new-env found-docs))]
+               [a-string-value (search-dir) (search-value query new-env (dir->docs search-dir))]
+               [else "Error515"]))
       ))))))
              
-             
+
+(define (lazy-eval fitem fthunk)
+  (cases env-item fitem
+    [fun-item (fname fbody fargs fenv) 2]
+    [else 3]))
+
                
-(define (resolve-value val envi)
+(define (search-value val envi found-docs)
   (if (is-func-call? val)
-      (let ([func-name (func-call-str->func-name val)])
-      (let ([result (apply-env func-name envi)])
-        result))
+      (let ([func-name (func-call-str->func-name val)]
+            [func-args (func-call-str->func-args val)]
+            )
+      (let ([func-item (apply-env func-name envi)]
+            [func-thunk (args-thunk func-args envi)]
+            )
+        (flazy func-item func-thunk)
+        ))
       (let ([result (apply-env val envi)])
         (if (equal? result "not-found")
             val
             (let ([found-val (var-item->value result)]
                   [found-env (var-item->env result)]
                   )
-              (resolve-value found-val found-env))
+              (search-value found-val found-env found-docs))
             ))))
       
 
