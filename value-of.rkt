@@ -110,8 +110,15 @@
   (cases program prog
           [a-program (obj) (value-of-object obj (empty-env))]))
 
+(define (doc-list->str-list doc-list)
+  (map remove-punc (map file->string doc-list)))
 
+(define (doc-contains? file query)
+  (let ([doc-str (remove-punc (file->string file))])
+    (string-contains? doc-str query)))
 
+(define (filter-docs doc-list query)
+    (filter (lambda (doc) (string-contains? (remove-punc (file->string doc)) query)) doc-list))
 
 (define (value-of-object obj prog-env)
   (let ([pair-list (extract-pair-list-from-obj obj)])
@@ -125,30 +132,82 @@
             [assignment-env (extract-assignment-env-from-pair-list pair-list new-func-env)]
             )
         (let ([new-env (ext-env (append assignment-env func-env) prog-env)])
-      (begin (display docs)
-             (display "\n")
-             (display size)
-             (display "\n")
-             (display assignment-env)
-             (display "\n")
-             (display func-env)
-             (display "\n")
+      (begin ;(display docs)
+             ;(display "\n")
+             ;(display size)
+             ;(display "\n")
+             ;(display assignment-env)
+             ;(display "\n")
+             ;(display func-env)
+             ;(display "\n")
              (cases value docs
                [a-object-value (obj)
                                (let ([found-docs (value-of-object obj new-env)])
                                  (search-value query new-env found-docs))]
-               [a-string-value (search-dir) (search-value query new-env (dir->docs search-dir))]
+               [a-string-value (search-dir)
+                               (search-value query new-env (dir->docs (read-str search-dir)))]
                [else "Error515"]))
       ))))))
              
+(define (resolve-fun-val-from-args val arg-index arg-env arg-list doc-list)
+  (let ([search-val (list-ref arg-list arg-index)])
+    (search-value search-val arg-env doc-list)
+  ))
 
-(define (lazy-eval fitem fthunk)
+(define (resolve-fun-val val fenv fargs arg-env arg-list doc-list)
+  (if (is-in-list fargs val)
+      (resolve-fun-val-from-args val (index-of fargs val) arg-env arg-list doc-list)
+      (search-value val fenv doc-list)
+      ))
+      
+
+(define (lazy-eval fitem fthunk starting-doc-list found-doc-list operand)
   (cases env-item fitem
-    [fun-item (fname fbody fargs fenv) 2]
+    [fun-item (fname fbody fargs fenv)
+              (cases thunk fthunk
+                [args-thunk (arg-list arg-env)
+                            (cases func-body fbody
+                              [fun-body (fo op ro)
+                                        (if (null? op)
+                                            (cond
+                                                [(equal? operand '!) (resolve-fun-val fo fenv fargs arg-env arg-list starting-doc-list)]
+                                                [(equal? operand '+)
+                                                 (remove-duplicates (append found-doc-list (resolve-fun-val fo fenv fargs arg-env arg-list starting-doc-list)))]
+                                                [(equal? operand '*) (resolve-fun-val fo fenv fargs arg-env arg-list found-doc-list)])
+                                            
+                                            (let ([next-op (car op)]
+                                                  [new-fitem (fun-item fname (fun-body (car ro) (cdr op) (cdr ro)) fargs fenv)])
+                                              (cond
+                                                [(equal? operand '!)
+                                                 (let ([new-found-doc-list (resolve-fun-val fo fenv fargs arg-env arg-list starting-doc-list)])
+                                                   (begin (display "")
+                                                   (if (and (null? new-found-doc-list) (equal? next-op '*))
+                                                       (list)
+                                                       (lazy-eval new-fitem fthunk starting-doc-list new-found-doc-list next-op))))
+                                                 ]
+                                                [(equal? operand '+)
+                                                 (let ([new-found-doc-list (remove-duplicates (append found-doc-list (resolve-fun-val fo fenv fargs arg-env arg-list starting-doc-list)))])
+                                                   (if (and (null? new-found-doc-list) (equal? next-op '*))
+                                                       (list)
+                                                       (lazy-eval new-fitem fthunk starting-doc-list new-found-doc-list next-op)))                                                 
+                                                 ]
+                                                [(equal? operand '*)
+                                                 (begin (display "")
+                                                 (let ([new-found-doc-list (resolve-fun-val fo fenv fargs arg-env arg-list found-doc-list)])
+                                                   (if (and (null? new-found-doc-list) (equal? next-op #\*))
+                                                       (list)
+                                                       (lazy-eval new-fitem fthunk starting-doc-list new-found-doc-list next-op))))
+                                                 ])
+                                                
+
+                                              ))
+                                        ])])
+              
+              ]
     [else 3]))
 
                
-(define (search-value val envi found-docs)
+(define (search-value val envi doc-list)
   (if (is-func-call? val)
       (let ([func-name (func-call-str->func-name val)]
             [func-args (func-call-str->func-args val)]
@@ -156,15 +215,15 @@
       (let ([func-item (apply-env func-name envi)]
             [func-thunk (args-thunk func-args envi)]
             )
-        (flazy func-item func-thunk)
+        (lazy-eval func-item func-thunk doc-list doc-list '!)
         ))
       (let ([result (apply-env val envi)])
         (if (equal? result "not-found")
-            val
+            (begin (display val) (filter-docs doc-list val))
             (let ([found-val (var-item->value result)]
                   [found-env (var-item->env result)]
                   )
-              (search-value found-val found-env found-docs))
+              (search-value found-val found-env doc-list))
             ))))
       
 

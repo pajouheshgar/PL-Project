@@ -2,6 +2,13 @@
 
 (require (lib "eopl.ss" "eopl"))
 
+(define (reduce func list)
+  (if (null? (cdr list))
+      (car list)
+      (func (car list) (reduce func (cdr list)))))
+
+
+
 (define args-lexical-spec
   '([whitespace (whitespace) skip]
     [identifier (letter (arbno (or letter "_"))) string]
@@ -98,10 +105,13 @@
   )
 
 (define (dir->docs dir)
-  (for/list ([file (in-directory (read-str dir))])
+  (for/list ([file (in-directory dir)])
       file))
 
+
 ;(dir->docs "./files/")
+
+
 
 (provide (all-defined-out))
 

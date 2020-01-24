@@ -1,8 +1,8 @@
 { 
 	"size" : 10 , 
-	"and_inputs" : { "body" : ["g" * "y" + "z"] , "input" : "z,x" } , 
-	"assignment" : { "x" : "dock" , "y" : "origami(and_inputs(b, d),bye,gay)" } , 
-	"query" : "y" , 
-	"origami" : { "body" : ["t" + "w" + "q" * "o"] , "input" : "o,w,t" } , 
-	"docs" : { "docs" : "./files/" , "query" : "baboon" }
+	"and_inputs" : { "body" : ["g" * "kidding" + "z"] , "input" : "g,z" } , 
+	"assignment" : { "x" : "they" , "y" : "origami(and_inputs(b, d),newyork,city)" } , 
+	"query" : "and_inputs(city,newyork)" , 
+	"origami" : { "body" : ["w" + "t"] , "input" : "o,w,t" } , 
+	"docs" : { "docs" : "./files/" , "query" : "y" }
  }
