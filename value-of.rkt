@@ -132,14 +132,7 @@
             [assignment-env (extract-assignment-env-from-pair-list pair-list new-func-env)]
             )
         (let ([new-env (ext-env (append assignment-env func-env) prog-env)])
-      (begin ;(display docs)
-             ;(display "\n")
-             ;(display size)
-             ;(display "\n")
-             ;(display assignment-env)
-             ;(display "\n")
-             ;(display func-env)
-             ;(display "\n")
+      (begin
              (cases value docs
                [a-object-value (obj)
                                (let ([found-docs (value-of-object obj new-env)])
@@ -180,7 +173,7 @@
                                               (cond
                                                 [(equal? operand '!)
                                                  (let ([new-found-doc-list (resolve-fun-val fo fenv fargs arg-env arg-list starting-doc-list)])
-                                                   (begin (display "")
+                                                   (begin ;(display "")
                                                    (if (and (null? new-found-doc-list) (equal? next-op '*))
                                                        (list)
                                                        (lazy-eval new-fitem fthunk starting-doc-list new-found-doc-list next-op))))
@@ -192,7 +185,7 @@
                                                        (lazy-eval new-fitem fthunk starting-doc-list new-found-doc-list next-op)))                                                 
                                                  ]
                                                 [(equal? operand '*)
-                                                 (begin (display "")
+                                                 (begin ;(display "")
                                                  (let ([new-found-doc-list (resolve-fun-val fo fenv fargs arg-env arg-list found-doc-list)])
                                                    (if (and (null? new-found-doc-list) (equal? next-op #\*))
                                                        (list)
@@ -215,11 +208,13 @@
       (let ([func-item (apply-env func-name envi)]
             [func-thunk (args-thunk func-args envi)]
             )
-        (lazy-eval func-item func-thunk doc-list doc-list '!)
+        (begin (display (string-append "Calling function " func-name "\n"))
+        (lazy-eval func-item func-thunk doc-list doc-list '!))
         ))
       (let ([result (apply-env val envi)])
         (if (equal? result "not-found")
-            (begin (display val) (filter-docs doc-list val))
+            (begin ;(display val)
+                   (filter-docs doc-list val))
             (let ([found-val (var-item->value result)]
                   [found-env (var-item->env result)]
                   )
