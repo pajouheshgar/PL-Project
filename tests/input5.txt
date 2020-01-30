@@ -1,0 +1,5 @@
+{  	"func" : { "body" : ["x"], "input" : "x" },
+	"assignment" : { "x" : "Metro", "y" : "func(far)" },
+	"query" : "y",
+	"docs" : { "docs" : "./files", "query" : "x" , "assignment" : { "z" : "x" } }
+}
