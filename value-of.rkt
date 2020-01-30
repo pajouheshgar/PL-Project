@@ -102,9 +102,11 @@
                 (if (is-keyword? (read-str k))
                     (extract-func-env-from-pair-list (cdr pair-list) current-env)
                     (let ([pair-list-inner (extract-pair-list-from-a-object-value v)])
+                      (begin ;(display pair-list-inner)
                       (let ([fun-body (body->fun-body (extract-key-from-pair-list pair-list-inner "body" 0))]
-                            [args (string-split (value->string (extract-key-from-pair-list pair-list-inner "input" 0)) ",")])
-                        (cons (fun-item (read-str k) fun-body args current-env) (extract-func-env-from-pair-list (cdr pair-list) current-env)))))])))
+                            [args (string-split (value->string (extract-key-from-pair-list pair-list-inner "input" (a-string-value "\"shitarg\""))) ",")])
+                        (begin ;(display args)
+                        (cons (fun-item (read-str k) fun-body args current-env) (extract-func-env-from-pair-list (cdr pair-list) current-env)))))))])))
 
 (define (value-of-program prog)
   (cases program prog
@@ -229,5 +231,5 @@
 
 
 ;(main "program.txt")
-(value-of-program (scan&parse (read-program-from-file "program.txt")))          
+(value-of-program (scan&parse (read-program-from-file "tests/input9.txt")))          
 
