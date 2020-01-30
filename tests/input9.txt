@@ -1,0 +1,13 @@
+{ 
+	"size" : 5 , 
+	"docs" : { 
+			"size" : 3 , 
+			"query" : "and_input(x,y(c),z)" , 
+			"docs" : "Data/" , 
+			"assignment" : { "z" : "newyork()" , "c" : "newyork()" } , 
+			"y" : { "body" : ["k"] , "input" : "k" } } , 
+	"assignment" : { "x" : "a" } , 
+	"query" : "newyork()" , 
+	"newyork" : { "body" : ["newyork"] } , 
+	"and_input" : { "body" : ["x" * "y" + "z"] , "input" : "x,y,z" } 
+}
