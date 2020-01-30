@@ -3,7 +3,7 @@
 	"docs" : { 
 			"size" : 3 , 
 			"query" : "and_input(x,y(c),z)" , 
-			"docs" : "Data/" , 
+			"docs" : "./files" , 
 			"assignment" : { "z" : "newyork()" , "c" : "newyork()" } , 
 			"y" : { "body" : ["k"] , "input" : "k" } } , 
 	"assignment" : { "x" : "a" } , 
