@@ -1,0 +1,5 @@
+{ 
+	"size" : 10 ,  
+	"assignment" : { "x" : "Metrocity" , "y" : "love" , "z" : "mad"  , 
+	"query" : "y" 
+ }
