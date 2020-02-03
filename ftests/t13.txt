@@ -1,0 +1,1 @@
+{ "assignment" : { "x" : "narrow" } , "docs" : { "query" : "the" , "assignment" : { "x" : "represent" } , "docs" : { "query" : "func()" , "func" : { "body" : ["x"] } , "docs" : "docs/" } } , "query" : "of" }

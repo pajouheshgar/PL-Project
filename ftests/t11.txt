@@ -1,0 +1,1 @@
+{ "docs" : { "query" : "the" , "docs" : "docs/" } , "query" : "directly" }

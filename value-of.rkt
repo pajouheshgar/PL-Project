@@ -120,7 +120,7 @@
     (string-contains? doc-str query)))
 
 (define (filter-docs doc-list query)
-    (filter (lambda (doc) (string-contains? (remove-punc (file->string doc)) query)) doc-list))
+    (filter (lambda (doc) (string-contains? (string-append " "(remove-punc (file->string doc)) " ") (string-append " " query " "))) doc-list))
 
 (define (value-of-object obj prog-env)
   (let ([pair-list (extract-pair-list-from-obj obj)])
@@ -231,5 +231,5 @@
 
 
 ;(main "program.txt")
-(value-of-program (scan&parse (read-program-from-file "tests/input9.txt")))          
+(value-of-program (scan&parse (read-program-from-file "ftests/t15.txt")))          
 
